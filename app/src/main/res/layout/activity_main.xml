@@ -1,0 +1,61 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="#ff000000">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/imageView"
+            android:layout_row="2"
+            android:layout_column="2"
+            android:layout_columnSpan="96"
+            android:layout_rowSpan="96"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <SeekBar
+                android:layout_width="fill_parent"
+                android:layout_height="75px"
+                android:id="@+id/seekBar"
+                android:background="#ffffffff"
+                android:max="8"
+                android:layout_weight="2" />
+
+            <TextView
+                android:layout_width="100px"
+                android:layout_height="75px"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="  1"
+                android:id="@+id/textView"
+                android:layout_weight="1"
+                android:textColor="#fffcfcfc"
+                android:textStyle="bold"
+                android:textSize="@dimen/abc_text_size_title_material"
+                android:layout_gravity="center"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="170dp"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/editText"
+            android:editable="false"
+            android:textColor="#ffffffff"
+            android:gravity="top" />
+    </LinearLayout>
+
+</RelativeLayout>
