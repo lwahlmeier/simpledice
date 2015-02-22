@@ -15,140 +15,20 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class MainActivity extends ActionBarActivity {
-    static final int[][] dicemap = new int[20][];
-    static final HashMap<Byte, Bitmap> dice = new HashMap<Byte, Bitmap>();
-    static final SecureRandom rnd = new SecureRandom();
-    static {
-        HashSet<int[]> pos = new HashSet<int[]>();
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(50, 50, 10, paint);
-        dice.put((byte)1, bitmap);
-
-        bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        canvas = new Canvas(bitmap);
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(20, 80, 10, paint);
-        canvas.drawCircle(80, 20, 10, paint);
-        dice.put((byte)2, bitmap);
-
-        bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        canvas = new Canvas(bitmap);
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(80, 80, 10, paint);
-        canvas.drawCircle(20, 20, 10, paint);
-        canvas.drawCircle(50, 50, 10, paint);
-        dice.put((byte)3, bitmap);
-
-        bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        canvas = new Canvas(bitmap);
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(80, 80, 10, paint);
-        canvas.drawCircle(20, 20, 10, paint);
-        canvas.drawCircle(20, 80, 10, paint);
-        canvas.drawCircle(80, 20, 10, paint);
-        dice.put((byte)4, bitmap);
-
-        bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        canvas = new Canvas(bitmap);
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(80, 80, 10, paint);
-        canvas.drawCircle(20, 20, 10, paint);
-        canvas.drawCircle(20, 80, 10, paint);
-        canvas.drawCircle(80, 20, 10, paint);
-        canvas.drawCircle(50, 50, 10, paint);
-        dice.put((byte)5, bitmap);
-
-        bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        canvas = new Canvas(bitmap);
-        paint.setColor(Color.RED);
-        canvas.drawPaint(paint);
-        paint.setColor(Color.WHITE);
-        canvas.drawCircle(80, 80, 10, paint);
-        canvas.drawCircle(20, 20, 10, paint);
-        canvas.drawCircle(20, 80, 10, paint);
-        canvas.drawCircle(80, 20, 10, paint);
-        canvas.drawCircle(80, 50, 10, paint);
-        canvas.drawCircle(20, 50, 10, paint);
-        dice.put((byte)6, bitmap);
-
-        dicemap[0] = new int[] {350, 350};
-
-        dicemap[1] = new int[] {100, 300, 600, 300};
-
-        dicemap[2] = new int[] {100, 100, 600, 100, 350, 600};
-
-        dicemap[3] = new int[] {100, 100, 600, 100, 100, 600, 600, 600};
-
-        dicemap[4] = new int[] {100, 100, 700, 100, 400, 400, 100, 700, 700, 700};
-
-        dicemap[5] = new int[] {
-                200, 200,
-                600, 200,
-                200, 450,
-                600, 450,
-                200, 700,
-                600, 700};
-
-        dicemap[6] = new int[] {
-                300, 200,
-                600, 200,
-                200, 450,
-                450, 450,
-                700, 450,
-                300, 700,
-                600, 700};
-
-        dicemap[7] = new int[] {
-                300, 200,
-                600, 200,
-                200, 450,
-                450, 450,
-                700, 450,
-                200, 700,
-                450, 700,
-                700, 700};
-
-        dicemap[8] = new int[] {
-                200, 200,
-                450, 200,
-                700, 200,
-                200, 450,
-                450, 450,
-                700, 450,
-                200, 700,
-                450, 700,
-                700, 700};
-    }
-    ImageView iv;
-    EditText et;
-    Bitmap bitmap;
-    Canvas canvas;
-    SeekBar seeker;
-    TextView tv;
-    SimpleExecutor executor = new SimpleExecutor();
-    AtomicBoolean isRunning = new AtomicBoolean(false);
-    int rolls = 0;
+    private static final SecureRandom rnd = new SecureRandom();
+    private ImageView iv;
+    private EditText et;
+    private Bitmap bitmap;
+    private Canvas canvas;
+    private SeekBar seeker;
+    private TextView tv;
+    private SimpleExecutor executor = new SimpleExecutor();
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
+    private RollRunner rollRunner = new RollRunner();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,7 +79,7 @@ public class MainActivity extends ActionBarActivity {
                 Paint paint = new Paint(Color.BLACK);
                 canvas.drawPaint(paint);
                 for(int i=0; i<dn+1; i++) {
-                    canvas.drawBitmap(checkScale(dice.get(drs[i]), dn), dicemap[dn][i*2], dicemap[dn][(i*2)+1], null);
+                    canvas.drawBitmap(checkScale(DiceCache.getDice(drs[i]), dn), DiceCache.dicemap[dn][i*2], DiceCache.dicemap[dn][(i*2)+1], null);
                 }
                 iv.setImageBitmap(bitmap);
             }
@@ -208,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private Bitmap checkScale(Bitmap b, int dice) {
+        //TODO: could probably come up with a cache for all sizes and types of dice
         if(dice<=3) {
             return Bitmap.createScaledBitmap(b, 300, 300, false);
         } else if (dice > 3  && dice < 6) {
@@ -221,66 +102,61 @@ public class MainActivity extends ActionBarActivity {
         public void onClick(View v) {
             if(isRunning.compareAndSet(false, true)) {
                 seeker.setEnabled(false);
-                executor.execute(new Runnable() {
-                    public void run() {
-                        byte[] rolld = new byte[0];
-                        for (int i = 0; i < 10; i++) {
-                            rolld = doRoll();
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        rolls++;
-                        final byte[] last = rolld;
-                        final StringBuilder sb = new StringBuilder();
-                        sb.append("\nRoll:");
-                        sb.append(rolls);
-                        sb.append(" was:");
-                        for(int i=0; i<last.length; i++) {
-                            sb.append(last[i]);
-                            if(i != last.length-1) {
-                                sb.append(",");
-                            }
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                seeker.setEnabled(true);
-                                isRunning.set(false);
-                                et.append(sb.toString());
-                                int scrollAmount = (et.getLayout().getLineTop(et.getLineCount()) - et.getHeight()) + et.getLineHeight();
-                                et.scrollTo(0, scrollAmount);
-                            }
-                        });
-
-                    }
-                });
+                //We farm this off to another thread because we dont want to pause on the
+                //UI thread ever
+                executor.execute(rollRunner);
             }
         }
     }
 
-    private class SimpleExecutor extends Thread {
-        LinkedBlockingDeque<Runnable> lbq = new LinkedBlockingDeque<Runnable>();
-
-        public SimpleExecutor() {
-            start();
-        }
-
+    private class RollRunner implements Runnable {
+        private int rolls = 0;
         @Override
         public void run() {
-            while(true) {
+            byte[] rolld = new byte[0];
+            for (int i = 0; i < 10; i++) {
+                rolld = doRoll();
                 try {
-                    lbq.take().run();
+                    //We should probably do something better here
+                    //But I didnt feel like writting a scheduler or bringing a good one in.
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        }
-
-        public void execute(Runnable run) {
-            lbq.add(run);
+            //These are clicks for roll not times we call doRoll #confusing
+            rolls++;
+            final byte[] last = rolld;
+            //TODO:change to string formatter
+            final StringBuilder sb = new StringBuilder();
+            sb.append("\nRoll:");
+            sb.append(rolls);
+            sb.append(" was:");
+            for(int i=0; i<last.length; i++) {
+                sb.append(last[i]);
+                if(i != last.length-1) {
+                    sb.append(",");
+                }
+            }
+            runOnUiThread(new FinishRoll(sb.toString()));
         }
     }
+
+    private class FinishRoll implements Runnable {
+        String out;
+
+        FinishRoll(String out) {
+            this.out = out;
+        }
+        @Override
+        public void run() {
+            seeker.setEnabled(true);
+            isRunning.set(false);
+            et.append(out);
+            //Is there an easier way to scroll down?
+            int scrollAmount = (et.getLayout().getLineTop(et.getLineCount()) - et.getHeight()) + et.getLineHeight();
+            et.scrollTo(0, scrollAmount);
+        }
+    }
+
 }
