@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 
 import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -27,7 +29,7 @@ public class MainActivity extends ActionBarActivity {
     private SeekBar seeker;
     private TextView tv;
     private SimpleExecutor executor = new SimpleExecutor();
-    private AtomicBoolean isRunning = new AtomicBoolean(false);
+    private AtomicInteger rollsRunning = new AtomicInteger(0);
     private RollRunner rollRunner = new RollRunner();
 
     @Override
@@ -79,32 +81,36 @@ public class MainActivity extends ActionBarActivity {
                 Paint paint = new Paint(Color.BLACK);
                 canvas.drawPaint(paint);
                 for(int i=0; i<dn+1; i++) {
-                    canvas.drawBitmap(checkScale(DiceCache.getDice(drs[i]), dn), DiceCache.dicemap[dn][i*2], DiceCache.dicemap[dn][(i*2)+1], null);
+                    canvas.drawBitmap(checkScale(drs[i], dn), DiceCache.dicemap[dn][i*2], DiceCache.dicemap[dn][(i*2)+1], null);
                 }
                 iv.setImageBitmap(bitmap);
+
             }
         });
         return drs;
     }
 
-    private Bitmap checkScale(Bitmap b, int dice) {
-        //TODO: could probably come up with a cache for all sizes and types of dice
-        if(dice<=3) {
-            return Bitmap.createScaledBitmap(b, 300, 300, false);
-        } else if (dice > 3  && dice < 6) {
-            return Bitmap.createScaledBitmap(b, 200, 200, false);
+    private Bitmap checkScale(byte diceRoll, int dn) {
+        if(dn<=3) {
+            return DiceCache.getDice(diceRoll, 300);
+        } else if (dn > 3  && dn < 6) {
+            return DiceCache.getDice(diceRoll, 200);
+        } else {
+            return DiceCache.getDice(diceRoll, 100);
         }
-        return b;
     }
 
     private class Roller implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if(isRunning.compareAndSet(false, true)) {
+            //Log.d("main", "click:"+rollsRunning.get());
+            if(rollsRunning.incrementAndGet() < 3) {
                 seeker.setEnabled(false);
                 //We farm this off to another thread because we dont want to pause on the
                 //UI thread ever
                 executor.execute(rollRunner);
+            } else {
+                rollsRunning.decrementAndGet();
             }
         }
     }
@@ -138,7 +144,9 @@ public class MainActivity extends ActionBarActivity {
                     sb.append(",");
                 }
             }
-            runOnUiThread(new FinishRoll(sb.toString()));
+            if(rollsRunning.decrementAndGet() == 0) {
+                runOnUiThread(new FinishRoll(sb.toString()));
+            }
         }
     }
 
@@ -151,7 +159,6 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void run() {
             seeker.setEnabled(true);
-            isRunning.set(false);
             et.append(out);
             //Is there an easier way to scroll down?
             int scrollAmount = (et.getLayout().getLineTop(et.getLineCount()) - et.getHeight()) + et.getLineHeight();

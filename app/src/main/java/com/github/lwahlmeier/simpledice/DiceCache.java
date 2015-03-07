@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.security.SecureRandom;
 import java.util.Collections;
@@ -16,9 +17,9 @@ import java.util.Map;
  */
 public class DiceCache {
     public static final int[][] dicemap = new int[20][];
-    private static final Map<Byte, Bitmap> dice;
+    private static final Map<Byte, DiceResCache> dice;
     static {
-        HashMap<Byte, Bitmap> tmpMap = new HashMap<>();
+        HashMap<Byte, DiceResCache> tmpMap = new HashMap<>();
         Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -27,7 +28,7 @@ public class DiceCache {
         canvas.drawPaint(paint);
         paint.setColor(Color.WHITE);
         canvas.drawCircle(50, 50, 10, paint);
-        tmpMap.put((byte)1, bitmap);
+        tmpMap.put((byte)1, new DiceResCache(bitmap, 1));
 
         bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         canvas = new Canvas(bitmap);
@@ -36,7 +37,7 @@ public class DiceCache {
         paint.setColor(Color.WHITE);
         canvas.drawCircle(20, 80, 10, paint);
         canvas.drawCircle(80, 20, 10, paint);
-        tmpMap.put((byte)2, bitmap);
+        tmpMap.put((byte)2, new DiceResCache(bitmap, 2));
 
         bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         canvas = new Canvas(bitmap);
@@ -46,7 +47,7 @@ public class DiceCache {
         canvas.drawCircle(80, 80, 10, paint);
         canvas.drawCircle(20, 20, 10, paint);
         canvas.drawCircle(50, 50, 10, paint);
-        tmpMap.put((byte)3, bitmap);
+        tmpMap.put((byte)3, new DiceResCache(bitmap, 3));
 
         bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         canvas = new Canvas(bitmap);
@@ -57,7 +58,7 @@ public class DiceCache {
         canvas.drawCircle(20, 20, 10, paint);
         canvas.drawCircle(20, 80, 10, paint);
         canvas.drawCircle(80, 20, 10, paint);
-        tmpMap.put((byte)4, bitmap);
+        tmpMap.put((byte)4, new DiceResCache(bitmap, 4));
 
         bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         canvas = new Canvas(bitmap);
@@ -69,7 +70,7 @@ public class DiceCache {
         canvas.drawCircle(20, 80, 10, paint);
         canvas.drawCircle(80, 20, 10, paint);
         canvas.drawCircle(50, 50, 10, paint);
-        tmpMap.put((byte)5, bitmap);
+        tmpMap.put((byte)5, new DiceResCache(bitmap, 5));
 
         bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         canvas = new Canvas(bitmap);
@@ -82,7 +83,7 @@ public class DiceCache {
         canvas.drawCircle(80, 20, 10, paint);
         canvas.drawCircle(80, 50, 10, paint);
         canvas.drawCircle(20, 50, 10, paint);
-        tmpMap.put((byte)6, bitmap);
+        tmpMap.put((byte)6, new DiceResCache(bitmap, 6));
 
         dice = Collections.unmodifiableMap(tmpMap);
 
@@ -135,7 +136,33 @@ public class DiceCache {
                 700, 700};
     }
 
-    public static Bitmap getDice(int dn) {
-        return dice.get((byte)(dn));
+    public static Bitmap getDice(int dn, int scale) {
+        //Log.d("DC", dn+":"+scale+":"+dice.toString());
+        return dice.get((byte)(dn)).getSize(scale);
+    }
+
+
+    public static class DiceResCache {
+        public final Bitmap origDice;
+        public final int number;
+        public final HashMap<Integer, Bitmap> cachedSizes = new HashMap<>();
+
+        public DiceResCache(Bitmap dice, int number) {
+            origDice = dice;
+            this.number = number;
+            cachedSizes.put(dice.getWidth(), dice);
+        }
+
+        public Bitmap getSize(int size) {
+            if(!cachedSizes.containsKey(size)) {
+                synchronized (cachedSizes) {
+                    if(!cachedSizes.containsKey(size)) {
+                        Log.d("DC", "NewDice:"+number+":"+size);
+                        cachedSizes.put(size, Bitmap.createScaledBitmap(origDice, size, size, false));
+                    }
+                }
+            }
+            return cachedSizes.get(size);
+        }
     }
 }
